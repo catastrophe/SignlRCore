@@ -4,7 +4,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using SignalRCoreMVCDemo.Hubs;
 using SignalRCoreMVCDemo.Models;
 
 namespace SignalRCoreMVCDemo.Controllers
@@ -12,10 +14,14 @@ namespace SignalRCoreMVCDemo.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly IHubContext<WeatherHub> _weatherHubContext;
 
-        public HomeController(ILogger<HomeController> logger)
+      
+        public HomeController(ILogger<HomeController> logger,
+            IHubContext<WeatherHub> weatherHubContext)
         {
             _logger = logger;
+            _weatherHubContext = weatherHubContext;
         }
 
         public IActionResult Index()
@@ -23,8 +29,12 @@ namespace SignalRCoreMVCDemo.Controllers
             return View();
         }
 
-        public IActionResult Privacy()
+        public async Task<ActionResult> Privacy()
         {
+            await _weatherHubContext
+                    .Clients
+                    .All
+                    .SendAsync("Broadcast", $"Privacy page visited at: {DateTime.Now}");
             return View();
         }
 
